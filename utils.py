@@ -20,10 +20,7 @@ import os
 import sys
 import pickle
 import struct
-<<<<<<< HEAD
-=======
 import copy
->>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
 from array import array
 
 # --- image processing imports --- #
@@ -69,9 +66,6 @@ def set_unfreeze_(model, submodules_to_unfreeze):
     return
 
 
-<<<<<<< HEAD
-def imshow(inp, title=None, normalize=False, figsize=None, cmap=None):
-=======
 def make_pretrained_state_dict(model_state, pretrained_state):
     """ Helper function to load copy a portion of a model's state
         from another model with (partially) overlapping architecture.
@@ -98,8 +92,8 @@ def make_pretrained_state_dict(model_state, pretrained_state):
     return warmstart_params
 
 
-def imshow(inp, title=None, normalize=False, figsize=None):
->>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
+def imshow(inp, title=None, normalize=False, figsize=None,
+           cmap=None):
     """ Imshow for Tensor. Visualizes images in a grid. """
     inp = inp.numpy().transpose((1, 2, 0))
     
@@ -112,25 +106,18 @@ def imshow(inp, title=None, normalize=False, figsize=None):
         std = np.array([0.229, 0.224, 0.225])
         inp = std * inp + mean
         inp = np.clip(inp, 0, 1)
-    
-<<<<<<< HEAD
+
     plt.figure(figsize=figsize)
     plt.imshow(inp, cmap=cmap)
-=======
-    plt.figure(figsize = figsize)
-    plt.imshow(inp)
->>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
+
     if title is not None:
         plt.title(title)
     plt.pause(0.001)  # pause a bit so that plots are updated
 
 
 def _get_nclasses_orig(agg_dict):
-<<<<<<< HEAD
     return max([max(l) for l in list(agg_dict.values())]) + 1
-=======
-    return max(max(list(agg_dict.values()))) + 1
->>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
+
 
 
 def _make_agg_matrix(n_orig_classes, agg_dict, dtype=torch.int64):
@@ -184,7 +171,4 @@ def from_onehot(y, batch=True):
 def y_vis_sample(y):
     y_collapsed = from_onehot(y, batch=False)
     return torch.unsqueeze(y_collapsed, dim=0)
-<<<<<<< HEAD
 
-=======
->>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
