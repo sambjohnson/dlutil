@@ -1,6 +1,10 @@
 import torch
+<<<<<<< HEAD
 from torch.utils.data import Dataset
 from .utils import _make_agg_matrix, aggregate_classes, _get_nclasses_orig
+=======
+from torch.utils.data import Dataset, DataLoader
+>>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -10,13 +14,18 @@ import torchvision
 import torchvision.transforms as transforms
 from torchvision.io import read_image
 
+<<<<<<< HEAD
 # these are required for defining the custom datasets
+=======
+# these are required for defining the regession ImageFolder
+>>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
 from typing import Dict, Any
 from torchvision import datasets
 
 import pandas as pd
 import numpy as np
 import os
+<<<<<<< HEAD
 import collections
 
 
@@ -58,6 +67,8 @@ def get_train_test_datasets(dataset, ratio, index_pair=None):
     ds_train = torch.utils.data.Subset(dataset, train_indices)
     ds_test = torch.utils.data.Subset(dataset, test_indices)
     return ds_train, ds_test
+=======
+>>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
 
 
 class ToFloat(object):
@@ -71,6 +82,7 @@ class ToFloat(object):
         return target_tensor.to(torch.float32)
 
 
+<<<<<<< HEAD
 class ToLong(object):
 
     def __call__(self, target):
@@ -88,11 +100,17 @@ class ToOneHot(object):
         return F.one_hot(target, num_classes=self.nclasses)
 
 
+=======
+>>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
 class ToRGB(object):
     """ Converts a 1-channel tensor into 3 (equal) channels
         for ease of use with pretrained vision models.
     """
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
     def __call__(self, image):
         image = torch.tensor(image)
         image = image.repeat(3, 1, 1)
@@ -108,27 +126,56 @@ class CustomImageDataset(Dataset):
             ...
         Useful for regression; circumvents ImageFolder classification scheme
         which requires that images be sorted into subfolders corresponding to class names.
+<<<<<<< HEAD
     """
 
     def __init__(self, annotations_file, img_dir, transform=None,
                  target_transform=None, npy=False):
+=======
+        If dealing with multidimensional labels, they can be specified by column location
+        in label .csv file
+        Args:
+            annotations_file: pathlike string to the .csv with annotations
+            img_dir: pathlike string to the image_directory
+            transform: transform for images (X's)
+            target_transform: transform for targets (y's); if y is vector, target_transform can
+                take vector inputs. No checks for consistency between y and this transform;
+                that is contingent on the user.
+            label_idx: an index (or list of integer indices) indicating which column(s) of .csv
+                contain y values. By default, this is 1 -- the second column of the .csv.
+        Returns:
+            custom dataset where X is an image in img_dir and y is a corresponding label from
+            annotations_file. A dataset that is well-suited to regression, which will return
+            X, y on each iteration, consistent with torch's expectations.
+    """
+    def __init__(self, annotations_file, img_dir, transform=None, target_transform=None, label_idx=1):
+>>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
         self.img_labels = pd.read_csv(annotations_file)
         self.img_dir = img_dir
         self.transform = transform
         self.target_transform = target_transform
+<<<<<<< HEAD
         self.npy = npy
+=======
+        self.label_idx = label_idx
+>>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
 
     def __len__(self):
         return len(self.img_labels)
 
     def __getitem__(self, idx):
         img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
+<<<<<<< HEAD
         # is the image saved as an .np array?
         if self.npy:
             image = np.load(img_path)
         else:
             image = read_image(img_path)
         label = self.img_labels.iloc[idx, 1]
+=======
+        image = read_image(img_path)
+        label = self.img_labels.iloc[idx, self.label_idx]  # note: iloc works with lists of indices
+>>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
         if self.transform:
             image = self.transform(image)
         if self.target_transform:
@@ -136,6 +183,7 @@ class CustomImageDataset(Dataset):
         return image, label
 
 
+<<<<<<< HEAD
 class CustomUnetDataset(Dataset):
     """ Custom dataset, like ImageFolder, designed for Unets.
         Designed for inputs of the form (X, y) where X and y
@@ -214,3 +262,27 @@ class CustomUnetDataset(Dataset):
         return x, y.float()
 
 
+=======
+def get_split_indices(dataset, ratio):
+    """ Create random split into train and test sets according to ratio.
+    """
+    nsamples = len(dataset)
+    indices = list(range(nsamples))
+    ntest = nsamples // ratio
+    test_indices = list(np.random.choice(indices, size=ntest, replace=False))
+    train_indices = list(set(indices) - set(test_indices))
+    return train_indices, test_indices
+
+
+def get_train_test_split(dataset, ratio):
+    """ Function to automatically (randomly) split a dataset
+        into a train and test set, and return those in the format
+            (trainset, testset)
+        The ratio should be the ratio of the total size to the test size,
+        e.g., ratio=10 will make a testet with 1/10th of the overall data.
+    """
+    train_indices, test_indices = get_split_indices(dataset, ratio)
+    train = torch.utils.data.Subset(dataset, train_indices)
+    test = torch.utils.data.Subset(dataset, test_indices)
+    return train, test
+>>>>>>> 5df4617bc30059b6c28e9530935633f4e3b86887
