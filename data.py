@@ -268,3 +268,49 @@ def get_train_test_split(dataset, ratio):
     test = torch.utils.data.Subset(dataset, test_indices)
     return train, test
 
+
+def get_index_batches(df, group_name='EID'):
+    """
+        Returns a list of index batches.
+        Given a pd DataFame df, and a column name,
+        calculate which indices of rows in df are in the
+        same group (i.e., have the same value of group_name).
+        Return these groups of indices as a list of arrays.
+
+        Note: helper function for custom batching with
+        PyTorch DataLoaders.
+
+        Arguments:
+            df: A pandas dataframe with column group_name
+            group_name: (optional, default='EID') The name
+                of the column of df on which to group.
+        Returns:
+            A list of arrays of indices, where each element of the
+            list is a group of indices, corresponding to indices
+            in the 0th, 1st, 2nd... group when the df is sorted
+            by the values of 'group_name'.
+    """
+    sort_by = group_name
+    sort_df = df.sort_values(sort_by)
+    sort_df['GroupIndex'] = sort_df.groupby(sort_by).ngroup()
+
+    index = np.array(sort_df.index)
+    group = np.array(sort_df['GroupIndex'])
+
+    index_batches = [index[group == g] for g in np.unique(group)]
+    return index_batches
+
+
+class BatchIndexSampler():
+    """
+        Pytorch sampler to return batches
+        based on a user-provided list
+        of groups of indices.
+
+    """
+
+    def __init__(self, batch_indices):
+        self.batch_indices = batch_indices
+
+    def __iter__(self):
+        return iter(self.batch_indices)
