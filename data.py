@@ -179,7 +179,7 @@ class CustomUnetDataset(Dataset):
                 X is the unlabeled image; y contains the
                 ground truth labels (pixelwise), either as an integer
                 or as a one-hot vector, for each pixel.
-            format: (optional: default is 'numpy'. By default, assumes
+            format: (optional: default is 'numpy') By default, assumes
                 x and y are stored as numpy arrays representing image
                 pixel values; any other value will ve assumed to be
                 an image in a format open-able by PIL.
@@ -188,9 +188,18 @@ class CustomUnetDataset(Dataset):
             through X, y pairs in typical Dataset fashion.
     """
 
-    def __init__(self, xdir, ydir, mapping_file, transform=None,
-                 target_transform=None, format='numpy', onehot=True,
-                 nclasses=None, agg_dict=None):
+    def __init__(self,
+                 xdir,
+                 ydir,
+                 mapping_file,
+                 transform=None,
+                 target_transform=None,
+                 format='numpy',
+                 onehot=True,
+                 nclasses=None,
+                 agg_dict=None,
+                 return_metadata=None
+                ):
         self.xy_pairs = pd.read_csv(mapping_file)  # reads .csv into pd dataframe
         self.xdir = xdir
         self.ydir = ydir
