@@ -183,6 +183,12 @@ class CustomUnetDataset(Dataset):
                 x and y are stored as numpy arrays representing image
                 pixel values; any other value will ve assumed to be
                 an image in a format open-able by PIL.
+            keep_channels: (optional, list) By default, the entire data
+                tensor X, Y is returned. However, if this argument is supplied,
+                then *only* the listed channels will be returned. E.g.,
+                if keep_channels=[1,3], then X[:, ..., [1, 3], ...] will be
+                returned. This functionality is useful for understanding
+                the impact of different channel variables on model performance.
         Returns:
             a CustomUnetDataset object, capable of iterating
             through X, y pairs in typical Dataset fashion.
@@ -198,6 +204,7 @@ class CustomUnetDataset(Dataset):
                  onehot=True,
                  nclasses=None,
                  agg_dict=None,
+                 keep_channels=None,
                  return_metadata=None
                 ):
         self.xy_pairs = pd.read_csv(mapping_file)  # reads .csv into pd dataframe
@@ -211,6 +218,7 @@ class CustomUnetDataset(Dataset):
         self.onehot = onehot
         self.nclasses = nclasses
         self.agg_dict = agg_dict
+        self.keep_channels = keep_channels
         if self.agg_dict is not None:
             n_orig = _get_nclasses_orig(agg_dict)
             self.agg_matrix = _make_agg_matrix(n_orig, agg_dict)
@@ -232,13 +240,18 @@ class CustomUnetDataset(Dataset):
             x = self.transform(x)
         if self.target_transform:
             y = self.target_transform(y)
+        # optionally omit channels of x other than keep_channels
+        if self.keep_channels is not None:
+            x = x[:, :, self.keep_channels]
 
         if self.onehot:
             # note: permutation is necessary to move channel axis to axis 1.
-            # meanwhile, squeeze removes an unnecessary axis (how did that get there??)
+            # meanwhile, squeeze removes an unnecessary axis (??)
             # note: indices would be (0, 3, 1, 2) for batch of ys
-            y = torch.permute(torch.squeeze(F.one_hot(y.to(torch.int64),
-                                                      num_classes=self.nclasses)), (2, 0, 1))
+            y = torch.permute(
+                torch.squeeze(F.one_hot(y.to(torch.int64),
+                                        num_classes=self.nclasses)),
+                (2, 0, 1))
         if self.agg_dict is not None:
             y = aggregate_classes(y, self.agg_matrix)
 
