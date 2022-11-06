@@ -242,7 +242,7 @@ class CustomUnetDataset(Dataset):
             y = self.target_transform(y)
         # optionally omit channels of x other than keep_channels
         if self.keep_channels is not None:
-            x = x[:, :, self.keep_channels]
+            x = x[self.keep_channels]
 
         if self.onehot:
             # note: permutation is necessary to move channel axis to axis 1.
