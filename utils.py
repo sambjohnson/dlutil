@@ -84,17 +84,62 @@ def make_pretrained_state_dict(model_state, pretrained_state):
             model's first layeres.
 
     """
-    pd = pretrained_state
-    sd = model_state
-    warmstart_params = copy.deepcopy(sd)
-    for k, v in pd.items():
+    warmstart_params = copy.deepcopy(model_state)
+    for k, v in pretrained_state.items():
         warmstart_params[k] = v
     return warmstart_params
 
 
+def get_last_fns(model_load_dir, return_optim=True):
+    """
+        Selects the latest model and load files
+        from a given directory, returning them
+        as a tuple of filenames.
+    """
+    import os
+    fns = os.listdir(model_load_dir)
+    opt = []
+    if return_optim:
+        opt = sorted([fn for fn in fns if 'optim' in fn])[-1]
+    mod = sorted([fn for fn in fns if 'model' in fn])[-1]
+    return mod, opt
+
+
+def make_warmstart_state_dict(model,
+                              pretrained_params,
+                              discard_keywords=None):
+    """
+        Creates a state dict suitable for initializing a model whose
+        architecture partially overlaps with that of another, already-trained
+        model.
+
+        Note: to save space, this function WILL modify the dictionary
+            pretrained_params *IN PLACE* by popping some elements!
+
+        Arguments:
+            model : the PyTorch model to initialize
+            pretrained_params : the (possibly incompatible) state dict of
+                another model, which is to be partially pasted onto the model's
+                own parameters.
+            discard_keywords : keywords
+        Returns:
+            params : the joined parameters ready to be loaded into new model
+    """
+    if discard_keywords is None:
+        discard_keywords = ['conv_last']
+    discard_keys = []
+    for keyword in discard_keywords:
+        discard_keys += [k for k in list(pretrained_params.keys()) if
+                         keyword in k]
+    for k in discard_keys:
+        pretrained_params.pop(k, None)
+    params = make_pretrained_state_dict(model.state_dict(), pretrained_params)
+    return params
+
+
 def imshow(inp, title=None, normalize=False, figsize=None,
            cmap=None):
-    """ Imshow for Tensor. Visualizes images in a grid. """
+    """ Imshow for Tensor. Visualize images in a grid. """
     inp = inp.numpy().transpose((1, 2, 0))
     
     if figsize is None:
@@ -121,7 +166,8 @@ def _get_nclasses_orig(agg_dict):
 
 
 def _make_agg_matrix(n_orig_classes, agg_dict, dtype=torch.int64):
-    """ Internal method to create matrix which collapses one-hot
+    """
+        Internal method to create matrix which collapses one-hot
         encoded classes into a smaller number of aggregate classes
         by matrix multiplication. For example:
         Args:

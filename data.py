@@ -259,7 +259,8 @@ class CustomUnetDataset(Dataset):
 
 
 def get_split_indices(dataset, ratio):
-    """ Create random split into train and test sets according to ratio.
+    """
+        Create random split into train and test sets according to ratio.
     """
     nsamples = len(dataset)
     indices = list(range(nsamples))
@@ -314,7 +315,7 @@ def get_index_batches(df, group_name='EID'):
     return index_batches
 
 
-class BatchIndexSampler():
+class BatchIndexSampler:
     """
         Pytorch sampler to return batches
         based on a user-provided list
@@ -327,3 +328,30 @@ class BatchIndexSampler():
 
     def __iter__(self):
         return iter(self.batch_indices)
+
+
+def make_group_dataloader(ds, df=None, group_name='EID'):
+    """
+        Given a CustomUnetDataset (dataset with attached df xy_pairs),
+        create and return a DataLoader that automatically returns data
+        batches that are grouped by `group_name.` E.g., when group_name is
+        EID, all data with the same EID in ds.xy_pairs will be returned as one
+        single batch.
+
+        Arguments:
+            ds : underlying Dataset from which to make the DataLoader
+            df : a pandas DataFrame with rows corresponding to data points of ds.
+                If not specified, this will be assumed already to be attached
+                to the dataset, as is the case for a CustomUnetDataset.
+            group_name : (optional, default='EID') the name of the column in df
+                that will be used to group datapoints into batches.
+
+        Returns:
+            dl_group_batches: the just-created, group-based dataloader
+    """
+    if df is None:
+        df = ds.xy_pairs
+    gp_ind = get_index_batches(df, group_name=group_name)
+    s_bind = BatchIndexSampler(gp_ind)
+    dl_group_batches = DataLoader(ds, batch_sampler=s_bind)
+    return dl_group_batches
