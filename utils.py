@@ -164,6 +164,19 @@ def _get_nclasses_orig(agg_dict):
     return max([max(l) for l in list(agg_dict.values())]) + 1
 
 
+def make_agg_dict(n_total, n_distinct):
+    """
+        Create a dictionary representing a partition of the set
+        {0, 1, ..., n_total - 1}.
+        The first n_distinct elements remain in their own partition,
+        and the remaining elements are grouped into a single partition.
+    """
+    d = {}
+    for i in range(n_distinct):
+        d[i] = [i]
+    d[n_distinct] = list(range(n_distinct, n_total))
+    return d
+
 
 def _make_agg_matrix(n_orig_classes, agg_dict, dtype=torch.int64):
     """
