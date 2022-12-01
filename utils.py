@@ -231,3 +231,6 @@ def y_vis_sample(y):
     y_collapsed = from_onehot(y, batch=False)
     return torch.unsqueeze(y_collapsed, dim=0)
 
+
+
+
